@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.25.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.14.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.22.2"></script>
+</head>
+<body>
+  <div id="vis"/>
+  <script>
+    const spec = {
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "width": 1200,
+    "height": 900,
+    "background": "#CCE5FF",
+    "layer": [
+        {
+            "data": {
+                "url": "worldmap.json",
+                "format": {
+                    "type": "topojson",
+                    "feature": "countries"
+                }
+            },
+            "mark": {
+                "type": "geoshape",
+                "fill": "#f2d59c",
+                "stroke": "#666666",
+                "strokeWidth": 0.9
+            }
+        },
+        {
+            "data": {
+                    "url": "graticules.json",
+                    "format": {
+                        "type": "topojson",
+                        "feature": "graticules"
+                    }
+                },
+            "mark": {
+                "type": "geoshape",
+                "stroke": "#CCCCCC",
+                "strokeWidth": 0.5
+            }
+        },
+        {
+            "data": { "url": "airports.csv" },
+            "transform": [
+                { "calculate": "['', datum.latitude, ',', datum.longitude, '']", "as": "location" }
+            ],
+            "mark": {
+                "type": "circle",
+                "opacity": 0.3,
+                "color": "#ff0066",
+                "size": 8
+            },
+            "encoding": {
+                "longitude": { "field": "longitude", "type": "quantitative" },
+                "latitude": { "field": "latitude", "type": "quantitative" }
+        }
+        },
+        {
+            "data": { "url": "flights.csv" },
+            "lookup": {
+                "from": { "data": { "url": "airports.csv" }, "key": "airportCode" },
+                "key": "sourceAirport",
+                "fields": ["sourceAirport","destinationAirport"]
+            },
+            "mark": {
+                "type": "rule",
+                "color": "#000000",
+                "opacity": 1,
+                "strokeWidth": 2
+            },
+            "encoding": {
+                "latitude": { "field": "latitude", "type": "quantitative" },
+                "longitude": { "field": "longitude", "type": "quantitative" },
+                "latitude2": { "field": "destinationAirport.latitude", "type": "quantitative" },
+                "longitude2": { "field": "destinationAirport.longitude", "type": "quantitative" }
+            }
+        }
+        ],
+        "config": { "view": { "stroke": "transparent" } },
+        "projection": { "type": "equirectangular" }
+    }
+
+    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+  </script>
+</body>
+</html>
